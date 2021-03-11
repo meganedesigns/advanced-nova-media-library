@@ -1,5 +1,5 @@
 <template>
-  <gallery-item class="gallery-item-image">
+  <gallery-item class="gallery-item-image" :class="{ 'show-statistics': field.showCustomProperties }">
     <div class="gallery-item-info p-3">
       <a v-if="downloadUrl" class="icon download" :href="downloadUrl" title="Download">
         <icon type="download" view-box="0 0 20 22" width="16" height="16"/>
@@ -18,6 +18,9 @@
       </a>
     </div>
     <img :src="src" :alt="image.name" class="gallery-image">
+    <div v-if="description" class="statistics">
+      <div class="description"><strong>{{ description }}</strong></div>
+    </div>
   </gallery-item>
 </template>
 
@@ -34,7 +37,15 @@
     data: () => ({
       acceptedMimeTypes: ['image/jpg', 'image/jpeg', 'image/png'],
       src: "data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==",
+      description: null,
     }),
+    mounted() {
+        if (this.image.custom_properties.hasOwnProperty('rooms')) {
+            this.description = this.image.custom_properties.rooms.join(' / ');
+        } else if (this.image.custom_properties.hasOwnProperty('description')) {
+            this.description = this.image.custom_properties.description;
+        }
+    },
     computed: {
       downloadUrl() {
         return this.image.id ? `/nova-vendor/ebess/advanced-nova-media-library/download/${this.image.id}` : null;
@@ -110,50 +121,71 @@
   $border-radius: 10px;
 
   .gallery {
-    .gallery-item-image.gallery-item {
-      width: $item-max-size;
-      height: $item-max-size;
+      .gallery-item-image.gallery-item {
+        width: $item-max-size;
+        height: $item-max-size;
 
-      &:hover .gallery-item-info {
-        display: flex;
-      }
-
-      .gallery-item-info {
-        display: none;
-        align-items: center;
-        justify-content: center;
-        flex-direction: column;
-        background-color: transparentize($bg-color, .2);
-        border-radius: $border-radius;
-        position: absolute;
-        z-index: 10;
-        top: 0;
-        bottom: 0;
-        left: 0;
-        right: 0;
-
-        .preview {
-          color: var(--black);
+        &:hover .gallery-item-info {
+          display: flex;
         }
 
-        .delete {
-          right: 10px;
-          color: var(--danger);
+        .gallery-item-info {
+            display: none;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            background-color: transparentize($bg-color, .2);
+            border-radius: $border-radius;
+            position: absolute;
+            z-index: 10;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            right: 0;
+
+            .preview {
+              color: var(--black);
+            }
+
+            .delete {
+              right: 10px;
+              color: var(--danger);
+            }
+
+            .crop {
+              left: 10px;
+              top: auto;
+              bottom: 10px;
+            }
         }
 
-        .crop {
-          left: 10px;
-          top: auto;
-          bottom: 10px;
+        .gallery-image {
+            object-fit: contain;
+            display: block;
+            max-height: 100%;
+            border-radius: $border-radius;
         }
-      }
-
-      .gallery-image {
-        object-fit: contain;
-        display: block;
-        max-height: 100%;
-        border-radius: $border-radius;
-      }
+        .statistics,
+        .type {
+          position: absolute;
+          left: 0;
+          width: 100%;
+          font-size: .75rem;
+          line-height: 0.95;
+          text-align: center;
+        }
+        .statistics {
+          bottom: 5px;
+          .dimensions {
+            font-size: .675rem;
+          }
+          .ratio {
+            font-size: .6rem;
+          }
+        }
+        .type {
+          top: 3px
+        }
     }
 
     .icon {
